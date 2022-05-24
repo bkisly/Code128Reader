@@ -32,7 +32,7 @@ bmpHeader:	.space	BMPHeader_Size
 	.align 2
 imgData: 	.space	MAX_IMG_SIZE
 
-ifname:	.asciz "C:\\Users\\bkisl\\Desktop\\barcode.bmp"
+ifname:	.asciz "barcode.bmp"
 newline:	.asciz	"\n"
 
 	.text
@@ -91,26 +91,48 @@ main_failure:
 	li a7, 10
 	ecall
 	
-#===========================================================================
-# find_min:
-# 	calculates min bar length based on the quiet zone
+
+#============================================================================
+# find_min_new:
+# 	calculates min bar length, checking the whole image and moves the pointer to point the first bar
 # arguments:
-#	a1 - first pixel address
+#	a2 - last pixel address, a1 - first pixel address
 # returns:
-#	a0 - min bar length
-#	a1 - moved pixel address
+#	a0 - minimum bar length
 
 find_min:
-	lbu t2, (a1)
-	beqz t2, find_min_ret
-	addi a0, a0, 1
+	# skip quiet zone
+	lbu t0, (a1)
 	addi a1, a1, 3
-	b find_min
+	bnez t0, find_min
+	
+	# calculate min
+	addi a1, a1, -3
+	mv t0, a1	# stop modifying a1 from here, t0 stores the address
+	mv t1, zero	# t1 stores previous pixel
+	li t2, -1	# t2 stores current length
+	li a0, 0x0fffffff	# a0 stores min length
 
+find_min_loop:
+	bge t0, a2, find_min_ret
+	lbu t3, (t0)
+	addi t0, t0, 3
+	addi t2, t2, 1
+	beq t3, t1, find_min_store_previous
+	
+	blt t2, a0, find_min_store_min
+	mv t2, zero
+	b find_min_store_previous
+	
+find_min_store_min:
+	mv a0, t2
+	mv t2, zero
+	
+find_min_store_previous:
+	mv t1, t3
+	b find_min_loop
+	
 find_min_ret:
-	srli a0, a0, 1
-	li t2, 5
-	divu a0, a0, t2
 	jr ra
 	
 
