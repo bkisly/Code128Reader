@@ -1,3 +1,5 @@
+.include "setcarray.asm"
+	
 	# structure fields declaration
 .eqv ImgInfo_fname	0
 .eqv ImgInfo_hdrdat 	4
@@ -19,8 +21,7 @@
 .eqv system_printInt	1
 .eqv system_printHex	34
 .eqv system_printBin	35
-
-.eqv stop_code	1594
+.eqv system_terminate	10
 
 	.data
 imgInfo: .space	24	# deskryptor obrazu
@@ -32,8 +33,10 @@ bmpHeader:	.space	BMPHeader_Size
 	.align 2
 imgData: 	.space	MAX_IMG_SIZE
 
-ifname:	.asciz "barcode.bmp"
+ifname:	.asciz "cbarcode.bmp"
 newline:	.asciz	"\n"
+err_wrongseq:	.asciz	"\nBarcode contains invalid sequence. Remember to load Code 128C barcode.\n"
+err_loadimg:	.asciz	"\nInvalid image file, try loading another image.\n"
 
 	.text
 main:
@@ -79,21 +82,68 @@ main_write_code:
 	mv a0, a2
 	jal read_seq
 	
-	li a7, system_printBin
-	ecall
+	jal print_seq
 	
-	mv a4, a0
-	jal write_line
+	#li a7, system_printBin
+	#ecall
+	
+	#mv a4, a0
+	#jal write_line
 	
 	bne a4, a3, main_write_code
 	
 main_failure:
-	li a7, 10
+	li a7, system_terminate
 	ecall
 	
 
 #============================================================================
-# find_min_new:
+# print_seq:
+#	`prints the binary sequence of code 128
+# arguments:
+#	a0 - binary code 128 sequence
+# returns:
+#	nothing, may terminate the program in case of invalid sequence
+
+print_seq:
+	li t2, start_code
+	li t3, stop_code
+	
+	beq a0, t2, print_seq_ret
+	beq a0, t3, print_seq_ret
+	
+	la t0, setcarray
+	add t0, t0, a0	# get the address of converted sequence value
+	lb t1, (t0)
+		
+	bltz t1, print_seq_err
+	
+	li t2, 10
+	li a7, system_printInt
+	bge t1, t2, print_seq_write
+	mv a0, zero
+	ecall
+	
+print_seq_write:
+	mv a0, t1
+	ecall
+	b print_seq_ret
+	
+print_seq_err:
+	la a0, err_wrongseq
+	li a7, system_printString
+	ecall
+	
+	li a0, 1
+	li a7, system_terminate
+	ecall
+	
+print_seq_ret:
+	jr ra
+	
+
+#============================================================================
+# find_min:
 # 	calculates min bar length, checking the whole image and moves the pointer to point the first bar
 # arguments:
 #	a2 - last pixel address, a1 - first pixel address

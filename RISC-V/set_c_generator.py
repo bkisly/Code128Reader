@@ -112,7 +112,7 @@ for code in set_c_sequences:
     value += 1
 
 value = 0
-result_str = "\t.data\nsetcarray:\t.half\n\t"
+result_str = "\t.data\nsetcarray:\t.byte\n\t"
 
 for element in result_array:
     result_str += f"{element}, "
