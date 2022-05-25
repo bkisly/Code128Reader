@@ -33,9 +33,9 @@ bmpHeader:	.space	BMPHeader_Size
 	.align 2
 imgData: 	.space	MAX_IMG_SIZE
 
-ifname:	.asciz "cbarcode.bmp"
+ifname:	.asciz "cbarcode2.bmp"
 newline:	.asciz	"\n"
-err_wrongseq:	.asciz	"\nBarcode contains invalid sequence. Remember to load Code 128C barcode.\n"
+err_wrongseq:	.asciz	"\nBarcode contains invalid sequence. Remember to load Code128C barcode.\n"
 err_loadimg:	.asciz	"\nInvalid image file, try loading another image.\n"
 
 	.text
@@ -90,9 +90,15 @@ main_write_code:
 	#mv a4, a0
 	#jal write_line
 	
-	bne a4, a3, main_write_code
+	bne a0, a3, main_write_code
+	b main_end
 	
 main_failure:
+	la a0, err_loadimg
+	li a7, system_printString
+	ecall
+
+main_end:
 	li a7, system_terminate
 	ecall
 	
