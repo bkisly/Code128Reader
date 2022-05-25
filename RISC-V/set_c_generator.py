@@ -112,7 +112,7 @@ for code in set_c_sequences:
     value += 1
 
 value = 0
-result_str = "\t.data\nsetcarray:\t.byte\n\t"
+result_str = ".eqv start_code\t1692\n.eqv stop_code\t1594\n\n\t.data\nsetcarray:\t.byte\n\t"
 
 for element in result_array:
     result_str += f"{element}, "

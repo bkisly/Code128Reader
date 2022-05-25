@@ -1,7 +1,7 @@
 .eqv start_code	1692
 .eqv stop_code	1594
-	
-			.data
+
+	.data
 setcarray:	.byte
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
