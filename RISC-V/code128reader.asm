@@ -87,18 +87,11 @@ main:
 	
 	# write the sequence of decoded bar lengths
 main_write_code:
-	li a3, stop_code	# stop code
+	li a3, stop_code
 	
 	mv a0, a2
-	jal read_seq
-	
+	jal read_seq	
 	jal print_seq
-	
-	#li a7, system_printBin
-	#ecall
-	
-	#mv a4, a0
-	#jal write_line
 	
 	bne a0, a3, main_write_code
 	b main_end
