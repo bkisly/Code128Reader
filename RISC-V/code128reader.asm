@@ -9,6 +9,7 @@
 .eqv ImgInfo_lbytes	20
 
 .eqv MAX_IMG_SIZE	147456	# 768 * 64 * 3
+.eqv MAX_FNAME_LENGTH	256
 
 .eqv BMPHeader_Size 54
 .eqv BMPHeader_width 18
@@ -22,6 +23,7 @@
 .eqv system_printHex	34
 .eqv system_printBin	35
 .eqv system_terminate	10
+.eqv system_readString	8
 
 	.data
 imgInfo: .space	24	# deskryptor obrazu
@@ -33,13 +35,25 @@ bmpHeader:	.space	BMPHeader_Size
 	.align 2
 imgData: 	.space	MAX_IMG_SIZE
 
-ifname:	.asciz "cbarcode2.bmp"
+ifname:		.space	MAX_FNAME_LENGTH
 newline:	.asciz	"\n"
+msg_inputfname:	.asciz	"Enter path for the Code128C 24-bit BMP image: "
 err_wrongseq:	.asciz	"\nBarcode contains invalid sequence. Remember to load Code128C barcode.\n"
 err_loadimg:	.asciz	"\nInvalid image file, try loading another image.\n"
 
 	.text
 main:
+	la a0, msg_inputfname
+	li a7, system_printString
+	ecall
+	
+	la a0, ifname
+	li a1, MAX_FNAME_LENGTH
+	li a7, system_readString
+	ecall
+	
+	jal trim_newline
+	
 	# fill the struct
 	la a0, imgInfo 
 	la t0, ifname
@@ -67,13 +81,9 @@ main:
 	slli a2, t4, 1
 	add a2, a2, t4
 	add a2, a2, a1
+	
 	jal find_min
-	
-	li a7, system_printInt
-	ecall
-	
 	mv a2, a0
-	jal write_line
 	
 	# write the sequence of decoded bar lengths
 main_write_code:
@@ -248,6 +258,28 @@ write_line:
 	li a7, system_printString
 	ecall
 	
+	jr ra
+	
+	
+#============================================================================
+# trim_newline:
+#	trims the given text to the first newline character
+# arguments:
+#	a0 - address of string to modify
+# returns:
+#	nothing, modifies argument directly
+
+trim_newline:
+	lbu t0, (a0)
+	la t1, newline
+	lbu t2, (t1)	# t2 stores newline code
+	beqz t0, trim_newline_ret
+	
+	addi a0, a0, 1
+	bne t0, t2, trim_newline
+	
+	sb zero, -1(a0)
+trim_newline_ret:
 	jr ra
 	
 #============================================================================
