@@ -18,8 +18,13 @@ ImageInfo* readBmp(const char* fileName)
         return NULL;
     }
 
+    printf("%i\n", btmhdr.bfType);
+    printf("%i\n", btmhdr.biPlanes);
+    printf("%i\n", btmhdr.biBitCount);
+    printf("%i\n", btmhdr.biCompression);
+
     if (btmhdr.bfType != 0x4D42 ||
-        btmhdr.biPlanes != 3 ||
+        btmhdr.biPlanes != 1 ||
         btmhdr.biBitCount != 24 ||
         btmhdr.biCompression != 0)
     {

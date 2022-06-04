@@ -1,12 +1,17 @@
 #include <stdio.h>
 #include "image.h"
 
-extern int add(int a, int b);
+extern int readColors(char* pImg);
 
 int main()
 {
-    int a = 3;
-    int b = 4;
-    printf("%i + %i = %i", a, b, add(a, b));
+    ImageInfo* imgInfo = readBmp("test.bmp");
+
+    printf("Bottom left pixel: %i\n", readColors(imgInfo->pImg));
+    
+    uint8_t g = *(imgInfo->pImg + 1);
+    printf("G: %i", g);
+
+    freeImage(imgInfo);
     return 0;
 }
