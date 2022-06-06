@@ -1,31 +1,43 @@
     section .text
-    global _readColors
-    global readColors
+    global _getNarrowestBar
+    global getNarrowestBar
 
-_readColors:
-readColors:
+; getNarrowestBar(char *beginAddress, char* endAddress)
+_getNarrowestBar:
+getNarrowestBar:
     ; prologue
+    ; eax - current address
+    ; ebx - last address
+    ; cl - current B value
+    ; ch - previous B value
+    ; dl - current pixel count
+    ; dh - min pixel count
+
     push ebp
     mov ebp, esp
-    xor ecx, ecx
+    push ebx
+
     xor eax, eax
-
-    ; body
-    mov edx, [ebp+8]
-    mov al, BYTE [edx]
-
-    inc edx
-    mov cl, BYTE [edx]
-    shl ecx, 8
-    or eax, ecx
+    xor ebx, ebx
     xor ecx, ecx
+    xor edx, edx
 
-    inc edx
-    mov cl, BYTE [edx]
-    shl ecx, 16
-    or eax, ecx
+    ; 1. save arguments into registers
+    mov eax, [ebp+8]
+    mov ebx, [ebp+12]
 
+    ; 2. skip the quiet zone
+.loop_quietzone:
+    mov cl, BYTE [eax]
+    inc dl
+    add eax, 3
+    test cl, cl
+    jnz .loop_quietzone
+
+    mov eax, edx
+    
     ; epilogue
+    pop ebx
     mov esp, ebp
     pop ebp
     ret
