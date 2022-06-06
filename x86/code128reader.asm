@@ -2,7 +2,8 @@
     global _getNarrowestBar
     global getNarrowestBar
 
-; getNarrowestBar(char *beginAddress, char* endAddress)
+; int getNarrowestBar(char *beginAddress, char* endAddress)
+;   returns the length of the narrowest bar in the image
 _getNarrowestBar:
 getNarrowestBar:
     ; prologue
@@ -17,10 +18,6 @@ getNarrowestBar:
     mov ebp, esp
     push ebx
 
-    xor eax, eax
-    xor ebx, ebx
-    xor ecx, ecx
-    xor edx, edx
     mov dh, 0xff
 
     ; 1. save arguments into registers
@@ -34,16 +31,18 @@ getNarrowestBar:
     test cl, cl
     jnz .loop_quietzone
 
+    ; 3. reset the temporary counter for the next group of pixels
 .loop_resetcounter:
     xor dl, dl
 
+    ; 4. check if current pixel is not equal to previous, update counters
 .loop_findnarrowest:
     cmp eax, ebx
     jge .ret
 
     mov cl, BYTE [eax]
     mov ch, BYTE [eax-3]
-    add dl, 1
+    inc dl
     add eax, 3
     cmp cl, ch
     je .loop_findnarrowest

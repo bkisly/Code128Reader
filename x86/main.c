@@ -7,7 +7,6 @@ int main()
 {
     ImageInfo* imgInfo = readBmp("test.bmp");
 
-    printf("Begin: %i, end: %i\n", imgInfo->pImg, imgInfo->pImg + imgInfo->width * 3);
     printf("Length of the narrowest bar = %i", getNarrowestBar(
         imgInfo->pImg, imgInfo->pImg + imgInfo->width * 3));
 
