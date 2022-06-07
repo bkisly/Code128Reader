@@ -1,3 +1,5 @@
+%include "setcarray.asm"
+
     section .text
     global _getNarrowestBar
     global getNarrowestBar
@@ -5,7 +7,11 @@
     global readSequence
     global _addressAfterQuiet
     global addressAfterQuiet
+    global _convertSequence
+    global convertSequence
 
+; unsigned char *addressAfterQuiet(unsigned char *beginAddress, unsigned char *endAddress)
+;   returns the address of first black pixel after quiet zone
 _addressAfterQuiet:
 addressAfterQuiet:
     push ebp
@@ -90,15 +96,17 @@ getNarrowestBar:
     ret
 
 
-; int readSequnece(unsigned char *beginAddress, uint8_t barLength)
+; unsigned int readSequnece(unsigned char *beginAddress, uint8_t barLength)
+;   returns the calculated binary value of bars sequence, starting from the given address
+;   and basing on the minimum bar length
 _readSequence:
 readSequence:
     ; prologue
-    ; EAX - begin address
-    ; BL - current pixel
-    ; CL - sequence counter (counts to 6)
-    ; CH - bar length
-    ; EDX - stores sequence
+    ; eax - begin address
+    ; bl - current pixel
+    ; cl - sequence counter (counts to 11, because every sequence has 11 bits)
+    ; ch - minimum bar length
+    ; edx - stores sequence
 
     push ebp
     mov ebp, esp
@@ -133,6 +141,22 @@ readSequence:
     shr edx, 1
     mov eax, edx
     pop ebx
+    mov esp, ebp
+    pop ebp
+    ret
+
+; int8_t convertSequence(unsigned int sequence)
+;   converts the given sequence to its matching Code128C decoded value
+;   returns -1 if the sequence is not valid
+_convertSequence:
+convertSequence:
+    push ebp
+    mov ebp, esp
+
+    xor eax, eax
+    mov ecx, [ebp+8]
+    mov al, BYTE [setcarray+ecx]
+
     mov esp, ebp
     pop ebp
     ret

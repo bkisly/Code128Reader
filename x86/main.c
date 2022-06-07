@@ -7,6 +7,7 @@
 extern unsigned char *addressAfterQuiet(unsigned char *beginAddress, unsigned char *endAddress);
 extern uint8_t getNarrowestBar(unsigned char *beginAddress, unsigned char *endAddress);
 extern unsigned int readSequence(unsigned char *beginAddres, uint8_t barLength);
+extern int8_t convertSequence(unsigned int sequence);
 
 void printSequences(unsigned char *beginAddress, unsigned char *endAddress)
 {
@@ -17,9 +18,16 @@ void printSequences(unsigned char *beginAddress, unsigned char *endAddress)
     while(!stopReached)
     {
         unsigned int sequence = readSequence(addrAfterQuiet, narrowestBarLenght);
+        unsigned int convertedSequence = convertSequence(sequence);
 
         if(sequence != START_CODE && sequence != STOP_CODE)
-            printf("%i\n", sequence);
+        {
+            printf("Sequence value: %i, decoded value: ", sequence);
+
+            if(convertedSequence < 10) printf("0");
+
+            printf("%i\n", convertedSequence);
+        }
         else if(sequence == STOP_CODE)
             stopReached = 1;
 
@@ -29,15 +37,9 @@ void printSequences(unsigned char *beginAddress, unsigned char *endAddress)
 
 int main()
 {
-    ImageInfo* imgInfo = readBmp("cbarcode2.bmp");
+    ImageInfo* imgInfo = readBmp("cbarcode.bmp");
     unsigned char *beginAddress = imgInfo->pImg + (imgInfo->height / 2) * imgInfo->line_bytes;
     unsigned char *endAddress = beginAddress + imgInfo->width * 3;
-
-    printf("Length of the narrowest bar = %i\n", getNarrowestBar(
-        beginAddress, endAddress));
-    printf("Begin address = %i, address after quiet = %i\n", beginAddress, addressAfterQuiet(beginAddress, endAddress));
-
-    printf("First sequence = %i\n\n\n\n", readSequence(addressAfterQuiet(beginAddress, endAddress), getNarrowestBar(beginAddress, endAddress)));
 
     printSequences(beginAddress, endAddress);
 

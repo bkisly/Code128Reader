@@ -115,7 +115,7 @@ if platform_arg == "risc-v":
     result_str = ".eqv start_code\t1692\n.eqv stop_code\t1594\n\n\t.data\nsetcarray:\t.byte\n\t"
     ofname = "RISC-V/setcarray.asm"
 elif platform_arg == "x86":
-    result_str = "\tsection .data\nsetcarray:\t.byte\n\t"
+    result_str = "\tsection .data\nsetcarray\tdb\t"
     ofname = "x86/setcarray.asm"
 else:
     print("Invalid architecture name. Terminating.")
@@ -133,7 +133,7 @@ value = 0
 for element in result_array:
     result_str += f"{element}, "
 
-    if value % 10 == 9:
+    if value % 10 == 9 and platform_arg == "risc-v":
         result_str += "\n\t"
 
     value += 1
