@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
         return 1;
 
     int returnCode = 0;
-    ImageInfo* imgInfo = readBmp(argv[1]);
+    ImageInfo *imgInfo = readBmp(argv[1]);
 
     if(imgInfo == NULL)
     {
