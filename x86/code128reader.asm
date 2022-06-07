@@ -1,8 +1,35 @@
     section .text
     global _getNarrowestBar
     global getNarrowestBar
+    global _readSequence
+    global readSequence
+    global _addressAfterQuiet
+    global addressAfterQuiet
 
-; int getNarrowestBar(char *beginAddress, char* endAddress)
+_addressAfterQuiet:
+addressAfterQuiet:
+    push ebp
+    mov ebp, esp
+
+    mov eax, [ebp+8]
+    mov ecx, [ebp+12]
+
+.loop:
+    cmp eax, ecx
+    jge .ret
+
+    mov dl, BYTE [eax]
+    add eax, 3
+    test dl, dl
+    jnz .loop
+    sub eax, 3
+
+.ret:
+    mov esp, ebp
+    pop ebp
+    ret
+
+; uint8_t getNarrowestBar(char *beginAddress, char* endAddress)
 ;   returns the length of the narrowest bar in the image
 _getNarrowestBar:
 getNarrowestBar:
@@ -57,6 +84,54 @@ getNarrowestBar:
     ; epilogue
     xor eax, eax
     mov al, dh
+    pop ebx
+    mov esp, ebp
+    pop ebp
+    ret
+
+
+; int readSequnece(unsigned char *beginAddress, uint8_t barLength)
+_readSequence:
+readSequence:
+    ; prologue
+    ; EAX - begin address
+    ; BL - current pixel
+    ; CL - sequence counter (counts to 6)
+    ; CH - bar length
+    ; EDX - stores sequence
+
+    push ebp
+    mov ebp, esp
+    push ebx
+    xor ebx, ebx
+    xor edx, edx
+    xor ecx, ecx
+
+    mov eax, [ebp+8]
+    mov cl, BYTE [ebp+12]
+    lea ecx, [ecx + ecx*2]  ; multiply bar length by 3, this is the increment of the address
+    mov ch, cl
+    xor cl, cl
+
+.read_loop:
+    cmp cl, 11
+    jae .ret
+
+    mov bl, BYTE [eax]    ; 1. load bar value
+    not bl  ; 2. store 0 if white pixel, otherwise 1
+    and bl, 1
+    or edx, ebx
+    shl edx, 1  ; 3. save the bit into the result binary sequence
+    inc cl
+
+    xor ebx, ebx    ; 4. increment the address
+    mov bl, ch
+    add eax, ebx
+    jmp .read_loop
+
+.ret:
+    shr edx, 1
+    mov eax, edx
     pop ebx
     mov esp, ebp
     pop ebp

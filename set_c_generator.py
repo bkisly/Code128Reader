@@ -1,3 +1,5 @@
+import sys
+
 set_c_sequences = [
     0b11011001100,
     0b11001101100,
@@ -101,7 +103,23 @@ set_c_sequences = [
     0b10111011110,
 ]
 
+if len(sys.argv) < 2:
+    print("You must specify output architecture in order to proceed. Terminating.")
+    exit()
+
 result_array = []
+platform_arg = sys.argv[1]
+
+
+if platform_arg == "risc-v":
+    result_str = ".eqv start_code\t1692\n.eqv stop_code\t1594\n\n\t.data\nsetcarray:\t.byte\n\t"
+    ofname = "RISC-V/setcarray.asm"
+elif platform_arg == "x86":
+    result_str = "\tsection .data\nsetcarray:\t.byte\n\t"
+    ofname = "x86/setcarray.asm"
+else:
+    print("Invalid architecture name. Terminating.")
+    exit()
 
 for i in range(0b11111111111 + 1):
     result_array.append(-1)
@@ -112,8 +130,6 @@ for code in set_c_sequences:
     value += 1
 
 value = 0
-result_str = ".eqv start_code\t1692\n.eqv stop_code\t1594\n\n\t.data\nsetcarray:\t.byte\n\t"
-
 for element in result_array:
     result_str += f"{element}, "
 
@@ -122,5 +138,7 @@ for element in result_array:
 
     value += 1
 
-with open("setcarray.asm", mode="w") as f:
+with open(ofname, mode="w") as f:
     f.write(result_str)
+
+print(f"Successfully saved output to {ofname}.")
