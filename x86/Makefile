@@ -18,4 +18,4 @@ link: compile
 
 clean:
 	rm *.o
-	rm $(ASM_SRC).lst
+	rm *.lst
