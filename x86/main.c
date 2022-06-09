@@ -1,7 +1,10 @@
 #define START_CODE 1692
 #define STOP_CODE 1594
+#define INVALID_SEQ_MSG "Given image contains invalid bars sequence. Make sure to load Code128C barcode."
+#define MAX_BUF_SIZE 128
 
 #include <stdio.h>
+#include <string.h>
 #include "image.h"
 
 extern unsigned char *addressAfterQuiet(unsigned char *beginAddress, unsigned char *endAddress);
@@ -9,11 +12,14 @@ extern uint8_t getNarrowestBar(unsigned char *beginAddress, unsigned char *endAd
 extern unsigned int readSequence(unsigned char *beginAddres, uint8_t barLength);
 extern int8_t convertSequence(unsigned int sequence);
 
-int printSequences(unsigned char *beginAddress, unsigned char *endAddress)
+void writeSequences(ImageInfo *imgInfo, char *buffer)
 {
+    unsigned char *beginAddress = imgInfo->pImg + (imgInfo->height / 2) * imgInfo->line_bytes;
+    unsigned char *endAddress = beginAddress + imgInfo->width * 3;
+
     int stopReached = 0;
     unsigned char *addrAfterQuiet = addressAfterQuiet(beginAddress, endAddress);
-    uint8_t narrowestBarLenght = getNarrowestBar(beginAddress, endAddress);
+    uint8_t narrowestBarLenght = getNarrowestBar(addrAfterQuiet, endAddress);
     int distToNextSeq = 3 * 11 * narrowestBarLenght;
 
     while(!stopReached)
@@ -24,14 +30,19 @@ int printSequences(unsigned char *beginAddress, unsigned char *endAddress)
         if(sequence != START_CODE && sequence != STOP_CODE)
         {  
             if(convertedSequence == -1)
-                return 0;
+            {
+                strcpy(buffer, INVALID_SEQ_MSG);
+                return;
+            }
 
             unsigned int nextSequence = readSequence(addrAfterQuiet + distToNextSeq, narrowestBarLenght);
 
             if(nextSequence != STOP_CODE)
             {
-                if(convertedSequence < 10) printf("0");
-                printf("%i", convertedSequence);
+                char newSeq[2];
+                newSeq[0] = (convertedSequence / 10) + '0';
+                newSeq[1] = (convertedSequence % 10) + '0';
+                strncat(buffer, newSeq, 2);
             }
         }
         else if(sequence == STOP_CODE)
@@ -39,8 +50,6 @@ int printSequences(unsigned char *beginAddress, unsigned char *endAddress)
 
         addrAfterQuiet += distToNextSeq;
     }
-
-    return 1;
 }
 
 void printHelp()
@@ -82,14 +91,13 @@ int main(int argc, char *argv[])
     }
     else
     {
-        unsigned char *beginAddress = imgInfo->pImg + (imgInfo->height / 2) * imgInfo->line_bytes;
-        unsigned char *endAddress = beginAddress + imgInfo->width * 3;
+        char buffer[MAX_BUF_SIZE] = "";
+        writeSequences(imgInfo, buffer);
 
-        if(!printSequences(beginAddress, endAddress))
-        {
-            printf("\nGiven image contains invalid bars sequence. Make sure to load Code128C barcode.");
+        if(strcmp(buffer, INVALID_SEQ_MSG) == 0)
             returnCode = 3;
-        }
+
+        printf(buffer);
     }
 
     freeImage(imgInfo);

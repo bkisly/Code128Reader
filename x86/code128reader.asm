@@ -28,7 +28,6 @@ addressAfterQuiet:
     add eax, 3
     test dl, dl
     jnz .loop
-    sub eax, 3
 
 .ret:
     mov esp, ebp
@@ -57,18 +56,11 @@ getNarrowestBar:
     mov eax, [ebp+8]
     mov ebx, [ebp+12]
 
-    ; 2. skip the quiet zone
-.loop_quietzone:
-    mov cl, BYTE [eax]
-    add eax, 3
-    test cl, cl
-    jnz .loop_quietzone
-
-    ; 3. reset the temporary counter for the next group of pixels
+    ; 2. reset the temporary counter for the next group of pixels
 .loop_resetcounter:
     xor dl, dl
 
-    ; 4. check if current pixel is not equal to previous, update counters
+    ; 3. check if current pixel is not equal to previous, update counters
 .loop_findnarrowest:
     cmp eax, ebx
     jge .ret
