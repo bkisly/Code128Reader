@@ -1,3 +1,5 @@
 *.exe
 *.o
 *.lst
+**/test.bmp
+**/code128reader

@@ -14,43 +14,45 @@
 ;   returns the address of first black pixel after quiet zone
 
 ; version compatible with Microsoft's calling convetion
-_addressAfterQuiet:
+addressAfterQuiet:
     ; arg1 - RCX
     ; arg2 - RDX
     cmp rcx, rdx
     jge .ret
 
-    mov al, BYTE [eax]
+    mov al, BYTE [rcx]
     add rcx, 3
     test al, al
-    jnz _addressAfterQuiet
+    jnz addressAfterQuiet
 
 .ret:
     mov rax, rcx
+    ;xor rax, rax
     ret
 
 ; version compatible with System V calling convention
-addressAfterQuiet:
+_addressAfterQuiet:
     ; arg1 - RDI
     ; arg2 - RSI
 
     cmp rdi, rsi
     jge .ret
 
-    mov dl, BYTE [eax]
+    mov dl, BYTE [rdi]
     add rdi, 3
     test dl, dl
-    jnz addressAfterQuiet
+    jnz _addressAfterQuiet
 
 .ret:
     mov rax, rdi
+    xor rax, rax
     ret
 
 ; uint8_t getNarrowestBar(char *beginAddress, char* endAddress)
 ;   returns the length of the narrowest bar in the image
 
 ; version compatible with Microsoft's calling convention
-_getNarrowestBar:
+getNarrowestBar:
     ; rcx - current address
     ; rdx - last address
     ; r8b - current B value
@@ -89,7 +91,7 @@ _getNarrowestBar:
     ret
 
 ; version compatible with System V calling convention
-getNarrowestBar:
+_getNarrowestBar:
     ; rdi - current address
     ; rsi - last address
     ; cl - current B value
@@ -108,8 +110,8 @@ getNarrowestBar:
     cmp rdi, rsi
     jge .ret
 
-    mov cl, BYTE [eax]
-    mov ch, BYTE [eax-3]
+    mov cl, BYTE [rdi]
+    mov ch, BYTE [rdi-3]
     inc dl
     add rdi, 3
     cmp cl, ch
@@ -133,7 +135,7 @@ getNarrowestBar:
 ;   and basing on the minimum bar length
 
 ; version compatible with Microsoft's calling convention
-_readSequence:
+readSequence:
     ; rcx - begin address
     ; rdx - minimum bar length
     ; rax - stores sequence
@@ -146,9 +148,10 @@ _readSequence:
     ; ch - minimum bar length
     ; edx - stores sequence
 
-    xor r8b, r8b
+    xor r8, r8
     xor rax, rax
 
+    and rdx, 0xff
     lea rdx, [rdx + rdx*2]  ; multiply bar length by 3, this is the increment of the address
     xor dh, dh
 
@@ -164,7 +167,9 @@ _readSequence:
     inc dh
 
     ; 4. increment the address
-    add rcx, rdx
+    xor r8, r8
+    mov r8b, dl
+    add rcx, r8
     jmp .read_loop
 
 .ret:
@@ -172,7 +177,7 @@ _readSequence:
     ret
 
 ; version compatible with System V calling convention
-readSequence:
+_readSequence:
     ; rdi - begin address
     ; rsi - minimum bar length
     ; rax - stores sequence
@@ -209,17 +214,17 @@ readSequence:
 ;   returns -1 if the sequence is not valid
 
 ; version compatible with Microsoft's calling convention
-_convertSequence:
+convertSequence:
     ; rcx - sequence
 
     xor rax, rax
-    mov al, BYTE [setcarray+rcx]
+    ;mov al, BYTE [setcarray+rcx]
     ret
 
 ; version compatible with System V calling convention
-convertSequence:
+_convertSequence:
     ; rdi - sequence
 
     xor rax, rax
-    mov al, BYTE [setcarray+rdi]
+    ;mov al, BYTE [setcarray+rdi]
     ret
