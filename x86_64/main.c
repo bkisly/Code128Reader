@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
         if(strcmp(buffer, INVALID_SEQ_MSG) == 0)
             returnCode = 3;
 
-        printf("%s", buffer);
+        printf("%s\n", buffer);
     }
 
     freeImage(imgInfo);

@@ -153,7 +153,7 @@ readSequence:
     mov r8b, BYTE [rcx]    ; 1. load bar value
     not r8b  ; 2. store 0 if white pixel, otherwise 1
     and r8b, 1
-    or rax, r8
+    or al, r8b
     shl rax, 1  ; 3. save the bit into the result binary sequence
     inc dh
 
