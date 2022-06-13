@@ -1,19 +1,16 @@
+; INFO: The following file contains assembly functions, which are compatible with Unix System V x86_64 calling convention
+
 %include "setcarray.asm"
 
     section .text
-    ;global _getNarrowestBar
     global getNarrowestBar
-    ;global _readSequence
     global readSequence
-    ;global _addressAfterQuiet
     global addressAfterQuiet
-    ;global _convertSequence
     global convertSequence
 
 ; unsigned char *addressAfterQuiet(unsigned char *beginAddress, unsigned char *endAddress)
 ;   returns the address of first black pixel after quiet zone
 
-; version compatible with System V calling convention
 addressAfterQuiet:
     ; arg1 - RDI
     ; arg2 - RSI
@@ -33,7 +30,6 @@ addressAfterQuiet:
 ; uint8_t getNarrowestBar(char *beginAddress, char* endAddress)
 ;   returns the length of the narrowest bar in the image
 
-; version compatible with System V calling convention
 getNarrowestBar:
     ; rdi - current address
     ; rsi - last address
@@ -77,7 +73,6 @@ getNarrowestBar:
 ;   returns the calculated binary value of bars sequence, starting from the given address
 ;   and basing on the minimum bar length
 
-; version compatible with System V calling convention
 readSequence:
     ; rdi - begin address
     ; rsi - minimum bar length
@@ -115,7 +110,6 @@ readSequence:
 ;   converts the given sequence to its matching Code128C decoded value
 ;   returns -1 if the sequence is not valid
 
-; version compatible with System V calling convention
 convertSequence:
     ; rdi - sequence
 
