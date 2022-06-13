@@ -1,13 +1,13 @@
 %include "setcarray.asm"
 
     section .text
-    global _getNarrowestBar
+    ;global _getNarrowestBar
     global getNarrowestBar
-    global _readSequence
+    ;global _readSequence
     global readSequence
-    global _addressAfterQuiet
+    ;global _addressAfterQuiet
     global addressAfterQuiet
-    global _convertSequence
+    ;global _convertSequence
     global convertSequence
 
 ; unsigned char *addressAfterQuiet(unsigned char *beginAddress, unsigned char *endAddress)
@@ -15,8 +15,8 @@
 
 ; version compatible with Microsoft's calling convetion
 addressAfterQuiet:
-    ; arg1 - RCX
-    ; arg2 - RDX
+    ; begin address - RCX
+    ; end address - RDX
     cmp rcx, rdx
     jge .ret
 
@@ -27,7 +27,6 @@ addressAfterQuiet:
 
 .ret:
     mov rax, rcx
-    ;xor rax, rax
     ret
 
 ; version compatible with System V calling convention
@@ -38,14 +37,13 @@ _addressAfterQuiet:
     cmp rdi, rsi
     jge .ret
 
-    mov dl, BYTE [rdi]
+    mov al, BYTE [rdi]
     add rdi, 3
-    test dl, dl
+    test al, al
     jnz _addressAfterQuiet
 
 .ret:
     mov rax, rdi
-    xor rax, rax
     ret
 
 ; uint8_t getNarrowestBar(char *beginAddress, char* endAddress)
@@ -96,14 +94,14 @@ _getNarrowestBar:
     ; rsi - last address
     ; cl - current B value
     ; ch - previous B value
-    ; dl - current pixel count
-    ; dh - min pixel count
+    ; al - current pixel count
+    ; ah - min pixel count
 
     mov dh, 0xff
 
     ; 2. reset the temporary counter for the next group of pixels
 .loop_resetcounter:
-    xor dl, dl
+    xor al, al
 
     ; 3. check if current pixel is not equal to previous, update counters
 .loop_findnarrowest:
@@ -112,7 +110,7 @@ _getNarrowestBar:
 
     mov cl, BYTE [rdi]
     mov ch, BYTE [rdi-3]
-    inc dl
+    inc al
     add rdi, 3
     cmp cl, ch
     je .loop_findnarrowest
@@ -120,13 +118,13 @@ _getNarrowestBar:
     cmp dh, dl
     jb .loop_resetcounter
 
-    mov dh, dl
+    mov ah, al
     jmp .loop_resetcounter
 
 .ret:
     ; epilogue
-    xor rax, rax
-    mov al, dh
+    mov al, ah
+    and rax, 0xff
     ret
 
 
@@ -142,16 +140,9 @@ readSequence:
     ; dh - sequence counter
     ; r8b - current pixel
 
-    ; eax - begin address
-    ; bl - current pixel
-    ; cl - sequence counter (counts to 11, because every sequence has 11 bits)
-    ; ch - minimum bar length
-    ; edx - stores sequence
-
     xor r8, r8
     xor rax, rax
 
-    and rdx, 0xff
     lea rdx, [rdx + rdx*2]  ; multiply bar length by 3, this is the increment of the address
     xor dh, dh
 
@@ -182,10 +173,11 @@ _readSequence:
     ; rsi - minimum bar length
     ; rax - stores sequence
     ; cl - sequence counter
-    ; ch - current pixel
+    ; r8b - current pixel
 
     xor rax, rax
     xor rcx, rcx
+    xor r8, r8
 
     lea rsi, [rdx + rdx*2]  ; multiply bar length by 3, this is the increment of the address
     and rsi, 0xff
@@ -194,10 +186,10 @@ _readSequence:
     cmp cl, 11
     jae .ret
 
-    mov ch, BYTE [rdi]    ; 1. load bar value
-    not ch  ; 2. store 0 if white pixel, otherwise 1
-    and ch, 1
-    or al, ch
+    mov r8b, BYTE [rdi]    ; 1. load bar value
+    not r8b  ; 2. store 0 if white pixel, otherwise 1
+    and r8b, 1
+    or al, r8b
     shl rax, 1  ; 3. save the bit into the result binary sequence
     inc cl
 
@@ -218,7 +210,8 @@ convertSequence:
     ; rcx - sequence
 
     xor rax, rax
-    ;mov al, BYTE [setcarray+rcx]
+    lea rdx, [setcarray]
+    mov al, BYTE [rdx+rcx]
     ret
 
 ; version compatible with System V calling convention
@@ -226,5 +219,6 @@ _convertSequence:
     ; rdi - sequence
 
     xor rax, rax
-    ;mov al, BYTE [setcarray+rdi]
+    lea rdx, [setcarray]
+    mov al, BYTE [rdx+rdi]
     ret

@@ -19,16 +19,13 @@ void writeSequences(ImageInfo *imgInfo, char *buffer)
 
     int stopReached = 0;
     unsigned char *addrAfterQuiet = addressAfterQuiet(beginAddress, endAddress);
-    printf("Begin: %i, end: %i, adter quiet: %i\n", beginAddress, endAddress, addrAfterQuiet);
     uint8_t narrowestBarLenght = getNarrowestBar(addrAfterQuiet, endAddress);
-    printf("narrowest bar: %i\n", narrowestBarLenght);
     int distToNextSeq = 3 * 11 * narrowestBarLenght;
 
     while(!stopReached)
     {
         unsigned int sequence = readSequence(addrAfterQuiet, narrowestBarLenght);
         unsigned int convertedSequence = convertSequence(sequence);
-        printf("%i\n", sequence);
 
         if(sequence != START_CODE && sequence != STOP_CODE)
         {  
@@ -81,7 +78,6 @@ int validateArgs(int argc)
 
 int main(int argc, char *argv[])
 {
-    printf("helo");
     if(!validateArgs(argc))
         return 1;
 
@@ -103,21 +99,6 @@ int main(int argc, char *argv[])
             returnCode = 3;
 
         printf("%s", buffer);
-        
-        /*
-
-       unsigned char *beginAddress = imgInfo->pImg + (imgInfo->height / 2) * imgInfo->line_bytes;
-        unsigned char *endAddress = beginAddress + imgInfo->width * 3;
-        unsigned char *addrAfterQuiet = addressAfterQuiet(beginAddress, endAddress);
-
-        printf("B: %i, E: %i, found: %i\n", beginAddress, endAddress, addrAfterQuiet);
-
-        uint8_t narrowestBar = getNarrowestBar(addrAfterQuiet, endAddress);
-        printf("narrowest: %i\n", narrowestBar);
-
-        unsigned int seq = readSequence(addrAfterQuiet, narrowestBar);
-        printf("seq: %i", seq);
-        */
     }
 
     freeImage(imgInfo);
